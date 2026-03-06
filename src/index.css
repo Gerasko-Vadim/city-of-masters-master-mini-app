@@ -135,6 +135,20 @@ body {
 
 .form-group { margin-bottom: 22px; }
 
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.btn-secondary {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
+}
+
 .spinner {
   width: 18px;
   height: 18px;
