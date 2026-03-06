@@ -48,10 +48,16 @@ function App() {
     setPhoneTouched(true);
     if (!canSubmit) return;
 
+    const telegramId = tgUser?.id ? String(tgUser.id) : null;
+    if (!telegramId) {
+      WebApp.showAlert('Не удалось получить Telegram ID. Откройте приложение через бота.');
+      return;
+    }
+
     setLoading(true);
     try {
       await axios.patch(`${API_URL}/specialists/register-profile`, {
-        telegramId: String(tgUser?.id),
+        telegramId,
         fullName: fullName.trim(),
         phone,
       });
