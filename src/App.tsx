@@ -4,7 +4,7 @@ import axios from 'axios';
 import './index.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || 'https://t.me/city_of_masters_support';
+const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || 'https://t.me/gorodmasterov312';
 
 interface Stats {
   fullName: string | null;
@@ -23,6 +23,7 @@ function App() {
   const [done, setDone] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [initialChecking, setInitialChecking] = useState(true);
 
   const tgUser = WebApp.initDataUnsafe?.user;
 
@@ -43,6 +44,20 @@ function App() {
         document.documentElement.setAttribute('data-theme', WebApp.colorScheme);
       }
     } catch {}
+
+    // Check if already registered — skip form, show dashboard
+    const telegramId = WebApp.initDataUnsafe?.user?.id ? String(WebApp.initDataUnsafe.user.id) : null;
+    if (!telegramId) { setInitialChecking(false); return; }
+
+    axios.get(`${API_URL}/specialists/my-stats?telegramId=${telegramId}`)
+      .then(res => {
+        if (res.data?.fullName) {
+          setStats(res.data);
+          setDone(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setInitialChecking(false));
   }, []);
 
   const fetchStats = async (telegramId: string) => {
@@ -93,6 +108,15 @@ function App() {
       setLoading(false);
     }
   };
+
+  // ── Initial loading check ─────────────────────────────────────────────────
+  if (initialChecking) {
+    return (
+      <div className="app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span className="spinner" style={{ width: 32, height: 32, borderWidth: 3, borderColor: 'var(--border)', borderTopColor: 'var(--primary)' }} />
+      </div>
+    );
+  }
 
   // ── Dashboard / Analytics screen ──────────────────────────────────────────
   if (done) {
