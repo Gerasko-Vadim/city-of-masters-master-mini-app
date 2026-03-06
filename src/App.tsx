@@ -47,11 +47,24 @@ function App() {
 
     // Check if already registered — skip form, show dashboard
     const telegramId = WebApp.initDataUnsafe?.user?.id ? String(WebApp.initDataUnsafe.user.id) : null;
+
+    // Fast path: localStorage cache (set after successful registration)
+    if (telegramId && localStorage.getItem(`registered_${telegramId}`) === '1') {
+      setDone(true);
+      // Still fetch fresh stats in background
+      axios.get(`${API_URL}/specialists/my-stats?telegramId=${telegramId}`)
+        .then(res => { if (res.data) setStats(res.data); })
+        .catch(() => {})
+        .finally(() => setInitialChecking(false));
+      return;
+    }
+
     if (!telegramId) { setInitialChecking(false); return; }
 
     axios.get(`${API_URL}/specialists/my-stats?telegramId=${telegramId}`)
       .then(res => {
         if (res.data?.fullName) {
+          localStorage.setItem(`registered_${telegramId}`, '1');
           setStats(res.data);
           setDone(true);
         }
@@ -99,6 +112,7 @@ function App() {
         fullName: fullName.trim(),
         phone,
       });
+      localStorage.setItem(`registered_${telegramId}`, '1');
       await fetchStats(telegramId);
       setDone(true);
     } catch (err) {
